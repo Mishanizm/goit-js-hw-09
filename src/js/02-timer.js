@@ -1,93 +1,90 @@
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import Notiflix from "notiflix";
 
 function addLeadingZero(value) {
-  return String(value).padStart(2, "0");
+    return value.toString().padStart(2, '0');
 }
 
 function convertMs(ms) {
-  const second = 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
 
-  const days = Math.floor(ms / day);
-  const hours = Math.floor((ms % day) / hour);
-  const minutes = Math.floor(((ms % day) % hour) / minute);
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+    const days = Math.floor(ms / day);
+    const hours = Math.floor((ms % day) / hour);
+    const minutes = Math.floor(((ms % day) % hour) / minute);
+    const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
-  return { days, hours, minutes, seconds };
+    return { days, hours, minutes, seconds };
 }
 
-const refs = {
-  datetimePicker: document.querySelector("#datetime-picker"),
-  startButton: document.querySelector('[data-start]'),
-  timerFields: {
-    days: document.querySelector('[data-days]'),
-    hours: document.querySelector('[data-hours]'),
-    minutes: document.querySelector('[data-minutes]'),
-    seconds: document.querySelector('[data-seconds]'),
-  },
-};
-
-let targetDate = null;
-let intervalId = null;
-
-function updateTimerFields({ days, hours, minutes, seconds }) {
-  refs.timerFields.days.textContent = addLeadingZero(days);
-  refs.timerFields.hours.textContent = addLeadingZero(hours);
-  refs.timerFields.minutes.textContent = addLeadingZero(minutes);
-  refs.timerFields.seconds.textContent = addLeadingZero(seconds);
-}
-
-function updateTimer() {
-  const currentDate = new Date();
-  const timeLeft = targetDate - currentDate;
-
-  if (timeLeft <= 0) {
-    clearInterval(intervalId);
-    intervalId = null;
-    updateTimerFields({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-    refs.startButton.disabled = false;
-    alert("Time's up!");
-    return;
-  }
-
-  const timeValues = convertMs(timeLeft);
-  updateTimerFields(timeValues);
-}
-
-function createCalendarInstance() {
-  return flatpickr(refs.datetimePicker, {
+const options = {
     enableTime: true,
     time_24hr: true,
-    dateFormat: "Y-m-d H:i", // Уберем секунды из формата
     defaultDate: new Date(),
-    minuteIncrement: 1, // Установим минуты без лишних нулей
+    minuteIncrement: 1,
     onClose(selectedDates) {
-      if (selectedDates[0]) {
-        targetDate = selectedDates[0];
-        const currentDate = new Date();
-        if (currentDate >= targetDate) {
-          alert("Please choose a date in the future");
-          targetDate = null;
-          refs.datetimePicker._input.value = ""; // Очищаем поле в случае ошибки
-        } else {
-          refs.startButton.disabled = false;
+        const selectedDate = selectedDates[0];
+
+        if (!selectedDate) {
+            document.querySelector('[data-start]').disabled = true;
+            return;
         }
-      }
+
+        const currentDate = new Date();
+
+        if (selectedDate < currentDate) {
+            Notiflix.Notify.Failure('Please choose a date in the future');
+            document.querySelector('[data-start]').disabled = true;
+            document.querySelector('#datetime-picker').value = ''; 
+        } else {
+            document.querySelector('[data-start]').disabled = false;
+        }
     },
-  });
+};
+
+flatpickr("#datetime-picker", options);
+
+let countdownInterval;
+let targetDate;
+
+function updateTimer() {
+    const currentDate = new Date();
+    const timeDifference = targetDate - currentDate;
+
+    if (timeDifference <= 0) {
+        clearInterval(countdownInterval);
+        Notiflix.Notify.Success('Countdown has finished!');
+        return;
+    }
+
+    const { days, hours, minutes, seconds } = convertMs(timeDifference);
+
+    document.querySelector('[data-days]').textContent = addLeadingZero(days);
+    document.querySelector('[data-hours]').textContent = addLeadingZero(hours);
+    document.querySelector('[data-minutes]').textContent = addLeadingZero(minutes);
+    document.querySelector('[data-seconds]').textContent = addLeadingZero(seconds);
 }
 
-refs.datetimePicker._flatpickr = createCalendarInstance();
+document.querySelector('[data-start]').disabled = true;
 
-refs.startButton.addEventListener("click", () => {
-  refs.startButton.disabled = true;
-  if (intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-    return;
-  }
-  intervalId = setInterval(updateTimer, 1000);
+document.querySelector('[data-start]').addEventListener('click', () => {
+    targetDate = flatpickr.parseDate(document.querySelector('#datetime-picker').value);
+    
+    if (!targetDate) {
+        Notiflix.Notify.Failure('Please choose a valid date');
+        return;
+    }
+
+    const currentDate = new Date();
+
+    if (targetDate < currentDate) {
+        Notiflix.Notify.Failure('Please choose a date in the future');
+        return;
+    }
+
+    countdownInterval = setInterval(updateTimer, 1000);
+    document.querySelector('[data-start]').disabled = true;
 });
