@@ -36,7 +36,7 @@ const options = {
         const currentDate = new Date();
 
         if (selectedDate < currentDate) {
-            Notiflix.Notify.Failure('Please choose a date in the future');
+            Notiflix.Notify.failure('Please choose a date in the future');
             document.querySelector('[data-start]').disabled = true;
             document.querySelector('#datetime-picker').value = ''; 
         } else {
@@ -56,7 +56,7 @@ function updateTimer() {
 
     if (timeDifference <= 0) {
         clearInterval(countdownInterval);
-        Notiflix.Notify.Success('Countdown has finished!');
+        Notiflix.Notify.success('Countdown has finished!');
         return;
     }
 
@@ -74,14 +74,14 @@ document.querySelector('[data-start]').addEventListener('click', () => {
     targetDate = flatpickr.parseDate(document.querySelector('#datetime-picker').value);
     
     if (!targetDate) {
-        Notiflix.Notify.Failure('Please choose a valid date');
+        Notiflix.Notify.failure('Please choose a valid date');
         return;
     }
 
     const currentDate = new Date();
 
     if (targetDate < currentDate) {
-        Notiflix.Notify.Failure('Please choose a date in the future');
+        Notiflix.Notify.failure('Please choose a date in the future');
         return;
     }
 
