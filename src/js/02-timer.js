@@ -23,7 +23,7 @@ function convertMs(ms) {
 const options = {
     enableTime: true,
     time_24hr: true,
-    defaultDate: new Date(),
+    defaultDate: new Date(new Date().getTime() + 1 * 60000), 
     minuteIncrement: 1,
     onClose(selectedDates) {
         const selectedDate = selectedDates[0];
@@ -35,10 +35,10 @@ const options = {
 
         const currentDate = new Date();
 
-        if (selectedDate < currentDate) {
+        if (selectedDate <= currentDate) {
             Notiflix.Notify.failure('Please choose a date in the future');
             document.querySelector('[data-start]').disabled = true;
-            document.querySelector('#datetime-picker').value = ''; 
+            document.querySelector('#datetime-picker').value = '';
         } else {
             document.querySelector('[data-start]').disabled = false;
         }
@@ -72,7 +72,7 @@ document.querySelector('[data-start]').disabled = true;
 
 document.querySelector('[data-start]').addEventListener('click', () => {
     targetDate = flatpickr.parseDate(document.querySelector('#datetime-picker').value);
-    
+
     if (!targetDate) {
         Notiflix.Notify.failure('Please choose a valid date');
         return;
@@ -80,11 +80,15 @@ document.querySelector('[data-start]').addEventListener('click', () => {
 
     const currentDate = new Date();
 
-    if (targetDate < currentDate) {
+    if (targetDate <= currentDate) {
         Notiflix.Notify.failure('Please choose a date in the future');
         return;
     }
 
+    targetDate.setSeconds(0);
+
+    updateTimer(); 
     countdownInterval = setInterval(updateTimer, 1000);
+
     document.querySelector('[data-start]').disabled = true;
 });
