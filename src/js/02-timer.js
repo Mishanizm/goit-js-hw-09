@@ -23,7 +23,7 @@ function convertMs(ms) {
 const options = {
     enableTime: true,
     time_24hr: true,
-    defaultDate: new Date(new Date().getTime() + 1 * 60000), 
+    defaultDate: new Date(new Date().getTime() + 5 * 60000), 
     minuteIncrement: 1,
     onClose(selectedDates) {
         const selectedDate = selectedDates[0];
