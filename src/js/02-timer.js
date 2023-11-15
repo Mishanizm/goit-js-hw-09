@@ -23,19 +23,19 @@ function convertMs(ms) {
 const options = {
     enableTime: true,
     time_24hr: true,
-    defaultDate: new Date(new Date().getTime() + 3 * 60000),
+    defaultDate: new Date,
     minuteIncrement: 1,
-    onClose(selectedDates) {
-        const selectedDate = selectedDates[0];
+    onClose(targetDates) {
+        const targetDate = targetDates[0];
 
-        if (!selectedDate) {
+        if (!targetDate) {
             document.querySelector('[data-start]').disabled = true;
             return;
         }
 
         const currentDate = new Date();
 
-        if (selectedDate <= currentDate) {
+        if (targetDate <= currentDate) {
             Notiflix.Notify.failure('Please choose a date in the future');
             document.querySelector('[data-start]').disabled = true;
             document.querySelector('#datetime-picker').value = ''; 
@@ -71,23 +71,23 @@ function updateTimer() {
 document.querySelector('[data-start]').disabled = true;
 
 document.querySelector('[data-start]').addEventListener('click', () => {
-    targetDate = flatpickr.parseDate(document.querySelector('#datetime-picker').value);
+    const selectedDate = document.querySelector('#datetime-picker').value;
     
-    if (!targetDate) {
-        Notiflix.Notify.failure('Please choose a valid date');
+    if (!selectedDate) {
+        Notiflix.Notify.failure('Please choose a valid date and time');
         return;
     }
 
+    targetDate = new Date(selectedDate);
     const currentDate = new Date();
 
     if (targetDate <= currentDate) {
-        Notiflix.Notify.failure('Please choose a date in the future');
+        Notiflix.Notify.failure('Please choose a date and time in the future');
         return;
     }
 
     targetDate.setSeconds(0);
 
-   
     updateTimer();  
     countdownInterval = setInterval(updateTimer, 1000);
 
